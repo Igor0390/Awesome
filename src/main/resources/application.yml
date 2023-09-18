@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: Awesome Park service
+
+  liquibase:
+    change-log: classpath:db/changelog/changelog-master.xml
+    enabled: true
+    url: ${SPRING_DATASOURCE_URL}
+    user: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  servlet.multipart:
+    maxFileSize: 10MB
+    maxRequestSize: 15MB
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database: POSTGRESQL
+    hibernate.ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show_sql: ${SPRING_SHOW_SQL:true}
+    generate-ddl: false
+
+
+server:
+  port: 80
+
+keycloak:
+  enabled: ${KEYCLOAK_ENABLED:false}
+  realm: ${KEYCLOAK_REALM}
+  resource: ${KEYCLOAK_RESOURCE}
+  authServerUrl: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8080/auth}
+  credentials:
+    secret: ${KEYCLOAK_CREDENTIALS_SECRET}
+  publicClient: false
+  policyEnforcerConfig:
+    paths:
+      - path: /v3/api-docs/*
+        enforcementMode: disabled
+      - path: /swagger-ui/*
+        enforcementMode: disabled
+      - path: /swagger-resources/*
+        enforcementMode: disabled
+    httpMethodAsScope: true
+    pathCacheConfig:
+      lifespan: 300000
+      maxEntries: 1000
+
+application:
+  title: Be awesome
+  version: 1.0
+  telegram:
+    name: ${TELEGRAM_NAME}
+    token: ${TELEGRAM_TOKEN}

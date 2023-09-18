@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet author="Kirill Gorkiy" id="2023.26.05_create-table.sql">
+        <sqlFile dbms="postgresql" encoding="utf8" endDelimiter="\nGO"
+                 relativeToChangelogFile="false" splitStatements="true" stripComments="false"
+                 path="db/changelog/sql/001-create-table.sql"/>
+    </changeSet>
+    <changeSet author="Kirill Gorkiy" id="2023.24.06_alter-table.sql">
+        <sqlFile dbms="postgresql" encoding="utf8" endDelimiter="\nGO"
+                 relativeToChangelogFile="false" splitStatements="true" stripComments="false"
+                 path="db/changelog/sql/002-alter-table.sql"/>
+    </changeSet>
+</databaseChangeLog>
