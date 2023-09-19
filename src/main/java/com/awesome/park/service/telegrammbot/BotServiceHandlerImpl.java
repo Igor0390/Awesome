@@ -17,41 +17,32 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.awesome.park.util.BotState.START;
 
-/*
 @Service
 @RequiredArgsConstructor
 public class BotServiceHandlerImpl implements BotServiceHandler {
 
     private final BookingService bookingService;
-    private final Map<Long, BotState> usersBotStates = new HashMap<>();
-    private final Map<Long, String> usersPhoneNumbers = new HashMap<>();
+    private final UserBotDataStorage userBotDataStorage;
 
-    public SendMessage handleStartCommand(String chatId, Message message) {
-        String phoneNumber = usersPhoneNumbers.getOrDefault(message.getFrom().getId(), "");
-        botState(message);
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText("Введите ваш номер телефона:");
-
-            return sendMessage;
-
+    public SendMessage handleStartCommand(String chatId) {
+            return SendMessage.builder()
+                    .chatId(chatId)
+                    .text("Введите ваш номер телефона:")
+                    .build();
     }
 
-    public BotState botState(Message message){
-        return usersBotStates.getOrDefault(message.getFrom().getId(), START);
-
-    }
 
     public SendMessage handlePhoneNumberInput(Message message, String chatId, String phoneNumber, String name) {
         phoneNumber = String.valueOf(message.getText());
         if (isValid(phoneNumber)) {
-            usersPhoneNumbers.put(message.getFrom().getId(), phoneNumber);
+            userBotDataStorage.getUsersPhoneNumbers().put(message.getFrom().getId(), phoneNumber);
             BaseDto dto = new BaseDto();
             dto.setUuid(UUID.randomUUID().toString());
             dto.setPhone(phoneNumber);
@@ -75,9 +66,9 @@ public class BotServiceHandlerImpl implements BotServiceHandler {
                     .replyMarkup(keyboardMarkup)
                     .replyToMessageId(message.getMessageId())
                     .build();
-
-            usersBotStates.put(message.getFrom().getId(), BotState.WAIT_FOR_BOOKING_TIME);
+            userBotDataStorage.getUsersBotStates().put(message.getFrom().getId(), BotState.WAIT_FOR_BOOKING_TIME);
             return sendMessage;
+
         } else {
             return SendMessage
                     .builder()
@@ -86,7 +77,6 @@ public class BotServiceHandlerImpl implements BotServiceHandler {
                             "введите номер телефона в формате  +7********** или 8**********")
                     .build();
         }
-
 
     }
 
@@ -105,15 +95,11 @@ public class BotServiceHandlerImpl implements BotServiceHandler {
                 .build();
     }
 
-    public boolean isValid(String phoneNumber) {
+    private boolean isValid(String phoneNumber) {
         String regex = "^(\\+7|8)\\d{10}$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(phoneNumber);
         return matcher.matches();
     }
-
-
-
 }
 
-*/
