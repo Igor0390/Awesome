@@ -62,7 +62,6 @@ public class BotMainService extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-
 }
 
 

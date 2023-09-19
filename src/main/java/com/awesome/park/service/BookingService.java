@@ -11,11 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.awesome.park.util.TimeSlot.END_AT_WORK;
+import static com.awesome.park.util.TimeSlot.START_AT_WORK;
+
 
 @Service
 @RequiredArgsConstructor
@@ -105,32 +110,34 @@ public class BookingService {
             throw new IllegalArgumentException("Запись не найдена");
         }
     }
+
     public List<LocalTime> getAvailableStartTimes() {
-        // Получите все бронирования из базы данных
-        List<Booking> bookings = bookingRepository.findAll();
+        LocalDate currentDate = LocalDate.now();
+        Instant startOfDay = currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant endOfDay = currentDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
 
-        // Создайте множество для хранения времен начала слотов
-        Set<LocalTime> bookedStartTimes = new TreeSet<>();
+        // Запросите из базы данных бронирования только для текущего дня
+        List<Booking> bookings = bookingRepository.findByTimeBetween(startOfDay, endOfDay);
 
-        // Заполните множество времен начала слотов на основе занятых слотов
+        // Создайте множество времен начала забронированных слотов
+        Set<LocalTime> bookedStartTimes = new HashSet<>();
         for (Booking booking : bookings) {
             Instant bookingTime = booking.getTime();
             LocalTime startTime = bookingTime.atZone(ZoneId.systemDefault()).toLocalTime();
             bookedStartTimes.add(startTime);
         }
 
-        // Создайте список доступных времен начала слотов
-        List<LocalTime> availableStartTimes = new ArrayList<>();
-
         // Определите доступные времена начала слотов
-        LocalTime currentTime = LocalTime.of(10, 0); // Начальное время
-        LocalTime endTime = LocalTime.of(21, 0); // Конечное время
+        List<LocalTime> availableStartTimes = new ArrayList<>();
+        LocalTime currentTime = START_AT_WORK.getTime(); // Начальное время
+        LocalTime endTime = END_AT_WORK.getTime(); // Конечное время
 
         while (currentTime.isBefore(endTime)) {
             if (!bookedStartTimes.contains(currentTime)) {
                 availableStartTimes.add(currentTime);
             }
-            currentTime = currentTime.plusMinutes(30); // Увеличьте на 30 минут
+            int interval = 30;
+            currentTime = currentTime.plusMinutes(interval); // Увеличьте на 30 минут
         }
 
         return availableStartTimes;

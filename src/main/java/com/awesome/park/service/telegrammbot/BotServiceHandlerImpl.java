@@ -17,11 +17,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static com.awesome.park.util.BotMessages.MESSAGES;
 
 
 @Service
@@ -34,7 +36,7 @@ public class BotServiceHandlerImpl implements BotServiceHandler {
     public SendMessage handleStartCommand(String chatId) {
             return SendMessage.builder()
                     .chatId(chatId)
-                    .text("Введите ваш номер телефона:")
+                    .text(MESSAGES.enterPhoneMessage())
                     .build();
     }
 
@@ -53,16 +55,18 @@ public class BotServiceHandlerImpl implements BotServiceHandler {
             // Создание клавиатуры с кнопками для выбора времени начала слота
             ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
             keyboardMarkup.setResizeKeyboard(true);
-            List<KeyboardRow> keyboard = new ArrayList<>();
-            for (LocalTime startTime : availableStartTimes) {
-                KeyboardRow row = new KeyboardRow();
-                row.add(new KeyboardButton(startTime.toString()));
-                keyboard.add(row);
-            }
+            List<KeyboardRow> keyboard = availableStartTimes.stream()
+                    .map(startTime -> {
+                        KeyboardRow row = new KeyboardRow();
+                        row.add(new KeyboardButton(startTime.toString()));
+                        return row;
+                    })
+                    .collect(Collectors.toList());
+
             keyboardMarkup.setKeyboard(keyboard);
             SendMessage sendMessage = SendMessage.builder()
                     .chatId(chatId)
-                    .text("Выберите время начала вашей каталки:")
+                    .text(MESSAGES.selectTimeMessage())
                     .replyMarkup(keyboardMarkup)
                     .replyToMessageId(message.getMessageId())
                     .build();
@@ -73,8 +77,7 @@ public class BotServiceHandlerImpl implements BotServiceHandler {
             return SendMessage
                     .builder()
                     .chatId(chatId)
-                    .text("Ввели некоректные данные! Попробуйте еще раз! " +
-                            "введите номер телефона в формате  +7********** или 8**********")
+                    .text(MESSAGES.invalidPhoneMessage())
                     .build();
         }
 
