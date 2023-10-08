@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS telegram_info
 (
-    id          SERIAL PRIMARY KEY,
+    id          BIGSERIAL PRIMARY KEY,
     chat_id     BIGINT      NOT NULL,
     username    VARCHAR(255),
     entity_type VARCHAR(50) NOT NULL,

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS bookings
 (
-    id           SERIAL PRIMARY KEY,
+    id           BIGSERIAL PRIMARY KEY,
     activity_id  BIGINT REFERENCES activities (id),
     customer_id  BIGINT REFERENCES customers (id),
     employee_id  BIGINT REFERENCES employees (id),

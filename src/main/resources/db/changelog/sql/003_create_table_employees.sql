@@ -1,7 +1,7 @@
 -- Создание таблицы "Работники"
 CREATE TABLE IF NOT EXISTS employees
 (
-    id                SERIAL PRIMARY KEY,
+    id                BIGSERIAL PRIMARY KEY,
     first_name        VARCHAR(255) NOT NULL,
     last_name         VARCHAR(255) NOT NULL,
     role              VARCHAR(255) NOT NULL,

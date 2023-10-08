@@ -1,33 +1,64 @@
 package com.awesome.park.controller;
 
-
-import com.awesome.park.dto.request.BookingRequestDto;
-import com.awesome.park.dto.response.BookingResponseDto;
+import com.awesome.park.api.BookingApi;
+import com.awesome.park.dto.BookingDto;
 import com.awesome.park.service.BookingService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/public/booking")
 @RequiredArgsConstructor
-@Tag(name = "Контроллер букинга", description = "Этот контроллер управляет записью на каталку")
-public class BookingController {
-
+public class BookingRestController implements BookingApi {
     private final BookingService bookingService;
+
+    @Override
+    public ResponseEntity<List<BookingDto>> getAllBookings() {
+        List<BookingDto> bookings = bookingService.getAllBookings();
+        return ResponseEntity.ok(bookings);
+    }
+
+    @Override
+    public ResponseEntity<BookingDto> getBookingById(Long id) {
+        Optional<BookingDto> booking = bookingService.getBookingById(id);
+        return booking.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Override
+    public ResponseEntity<BookingDto> createBooking(BookingDto bookingDto) {
+        BookingDto createdBooking = bookingService.createOrUpdateBooking(bookingDto);
+        return ResponseEntity.ok(createdBooking);
+    }
+
+    @Override
+    public ResponseEntity<BookingDto> updateBooking(Long id, BookingDto bookingDto) {
+        bookingDto.setId(id);
+        BookingDto updatedBooking = bookingService.createOrUpdateBooking(bookingDto);
+        return ResponseEntity.ok(updatedBooking);
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteBooking(Long id) {
+        bookingService.deleteBookingById(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+
+
+
+/*
+    private final CustomerService customerService;
 
 
     @Operation(summary = "Создание записи для пользователя",
             description = "Позволяет зарегистрировать пользователя на каталку")
     @PostMapping
     public ResponseEntity<String> createOrUpdateBooking(@RequestBody BookingRequestDto bookingDto) {
-        return bookingService.createOrUpdateBooking(bookingDto.getPhone(), bookingDto.getName(), bookingDto.getTime());
+        return customerService.createOrUpdateBooking(bookingDto.getPhone(), bookingDto.getName(), bookingDto.getTime());
     }
 
 
@@ -35,7 +66,7 @@ public class BookingController {
             description = "Возвращает информацию о записавшемся пользователе по id")
     @GetMapping("/{id}")
     public ResponseEntity<BookingResponseDto> getBookingById(@PathVariable @Parameter(description = "Id Идентификатор пользователя") UUID id) {
-        BookingResponseDto responseDto = bookingService.getBookingById(id);
+        BookingResponseDto responseDto = customerService.getBookingById(id);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -43,7 +74,7 @@ public class BookingController {
             description = "Возвращает информацию о всех записавшихся пользователях")
     @GetMapping
     public ResponseEntity<List<BookingResponseDto>> getAllBookings() {
-        List<BookingResponseDto> responseDtoList = bookingService.getAllBookings();
+        List<BookingResponseDto> responseDtoList = customerService.getAllBookings();
         return ResponseEntity.ok(responseDtoList);
     }
 
@@ -51,7 +82,6 @@ public class BookingController {
             description = "Удаляет запись о пользователе по id")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBooking(@PathVariable @Parameter(description = "Id Идентификатор пользователя") UUID id) {
-        bookingService.deleteBooking(id);
+        customerService.deleteBooking(id);
         return ResponseEntity.ok("Запись успешно удалена");
-    }
-}
+    }*/
