@@ -20,7 +20,9 @@ public class CallbackQueryHandler {
     public SendMessage handleCallbackQuery(Update update, Long chatId) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         String callbackData = callbackQuery.getData();
-//        String chatId = update.getCallbackQuery().getId();
+        if (callbackData.startsWith("TIME_SLOT:")) {
+            return bookingHandler.handleTimeSlotCallback(chatId, callbackData);
+        }
         switch (callbackData) {
             case "wake_boarding_booking" -> {
                 // Вызываем обработчик для записи на катание на вейк-борде
