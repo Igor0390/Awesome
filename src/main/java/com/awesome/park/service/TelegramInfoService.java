@@ -31,12 +31,25 @@ public class TelegramInfoService {
 
     public TelegramInfoDto createOrUpdateTelegramInfo(TelegramInfoDto telegramInfoDto) {
         TelegramInfo telegramInfo = telegramInfoMapper.mapToEntity(telegramInfoDto);
+        return saveAndMap(telegramInfo);
+    }
+
+    public void createOrUpdateTelegramInfo(TelegramInfo telegramInfo) {
+        saveAndMap(telegramInfo);
+    }
+
+    private TelegramInfoDto saveAndMap(TelegramInfo telegramInfo) {
         TelegramInfo savedTelegramInfo = telegramInfoRepository.save(telegramInfo);
         return telegramInfoMapper.mapToDto(savedTelegramInfo);
     }
 
+
     public void deleteTelegramInfoById(Long id) {
         telegramInfoRepository.deleteById(id);
+    }
+
+    public TelegramInfo findByUsername(String userName) {
+        return telegramInfoRepository.findByUsername(userName);
     }
 }
 

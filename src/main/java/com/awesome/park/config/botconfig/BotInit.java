@@ -1,4 +1,3 @@
-/*
 package com.awesome.park.config.botconfig;
 
 import lombok.RequiredArgsConstructor;
@@ -21,4 +20,3 @@ public class BotInit {
         new TelegramBotsApi(DefaultBotSession.class).registerBot((LongPollingBot) bot);
     }
 }
-*/

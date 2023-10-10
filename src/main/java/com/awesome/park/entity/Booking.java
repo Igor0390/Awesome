@@ -13,7 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
@@ -39,6 +39,6 @@ public class Booking {
     @NotNull(message = "Время бронирования не может быть пустым")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "booking_time", nullable = false)
-    private Instant bookingTime;
+    private LocalDateTime bookingTime;
 }
 

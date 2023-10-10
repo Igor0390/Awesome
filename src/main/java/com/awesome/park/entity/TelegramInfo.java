@@ -24,10 +24,5 @@ public class TelegramInfo {
     @Column(name = "username")
     private String username;
 
-    @Column(name = "entity_type", nullable = false)
-    private String entityType;
-
-    @Column(name = "entity_id", nullable = false)
-    private Long entityId;
 }
 

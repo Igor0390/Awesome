@@ -1,8 +1,10 @@
 package com.awesome.park.util;
 
 public enum BotState {
-    START,           // Начальное состояние
-    WAIT_FOR_PHONE,  // Ожидание ввода номера телефона
-    WAIT_FOR_BOOKING_TIME     // Ожидание выбора времени записи
+    START,
+    WAIT_FOR_NAME_AND_SURNAME,
+    WAIT_FOR_PHONE,
+    WAIT_FOR_BOOKING_TIME,
+    WAIT_FOR_CONFIRMATION
 }
 

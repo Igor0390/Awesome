@@ -35,8 +35,20 @@ public class CustomerService {
         return customerMapper.mapToDto(savedCustomer);
     }
 
+    public void createOrUpdateCustomer(Customer customer) {
+        customerRepository.save(customer);
+
+    }
+
+
+
+
     public void deleteCustomerById(Long id) {
         customerRepository.deleteById(id);
+    }
+
+    public Customer getCustomerByTelegramInfoId(Long telegramInfoId) {
+       return customerRepository.getCustomerByTelegramInfoId(telegramInfoId);
     }
 }
 
