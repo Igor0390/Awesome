@@ -5,14 +5,29 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet author="Kirill Gorkiy" id="2023.26.05_create-table.sql">
+    <changeSet author="Kirill Gorkiy" id="2023.05.10_001_create_table_activities">
         <sqlFile dbms="postgresql" encoding="utf8" endDelimiter="\nGO"
                  relativeToChangelogFile="false" splitStatements="true" stripComments="false"
-                 path="db/changelog/sql/001-create-table.sql"/>
+                 path="db/changelog/sql/001_create_table_activities.sql"/>
     </changeSet>
-    <changeSet author="Kirill Gorkiy" id="2023.24.06_alter-table.sql">
+    <changeSet author="Kirill Gorkiy" id="2023.05.10_create_table_telegram_info">
         <sqlFile dbms="postgresql" encoding="utf8" endDelimiter="\nGO"
                  relativeToChangelogFile="false" splitStatements="true" stripComments="false"
-                 path="db/changelog/sql/002-alter-table.sql"/>
+                 path="db/changelog/sql/002_create_table_telegram_info.sql"/>
+    </changeSet>
+    <changeSet author="Kirill Gorkiy" id="2023.05.10_create_table_employees">
+        <sqlFile dbms="postgresql" encoding="utf8" endDelimiter="\nGO"
+                 relativeToChangelogFile="false" splitStatements="true" stripComments="false"
+                 path="db/changelog/sql/003_create_table_employees.sql"/>
+    </changeSet>
+    <changeSet author="Kirill Gorkiy" id="2023.05.10_create_table_customers">
+        <sqlFile dbms="postgresql" encoding="utf8" endDelimiter="\nGO"
+                 relativeToChangelogFile="false" splitStatements="true" stripComments="false"
+                 path="db/changelog/sql/004_create_table_customers.sql"/>
+    </changeSet>
+    <changeSet author="Kirill Gorkiy" id="2023.26.05_create_table_bookings">
+        <sqlFile dbms="postgresql" encoding="utf8" endDelimiter="\nGO"
+                 relativeToChangelogFile="false" splitStatements="true" stripComments="false"
+                 path="db/changelog/sql/005_create_table_bookings.sql"/>
     </changeSet>
 </databaseChangeLog>

@@ -7,6 +7,5 @@ import javax.validation.constraints.NotBlank;
 
 @ConstructorBinding
 @ConfigurationProperties(prefix = "application.telegram")
-public record BotConfig(@NotBlank String name,
-                        @NotBlank String token) {
+public record BotConfig(@NotBlank String name, @NotBlank String token) {
 }

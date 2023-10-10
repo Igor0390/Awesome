@@ -2,14 +2,15 @@ package com.awesome.park.service.telegrammbot;
 
 
 import com.awesome.park.config.botconfig.BotConfig;
+import com.awesome.park.service.telegrammbot.handlers.CallbackQueryHandler;
+import com.awesome.park.service.telegrammbot.handlers.EventsHandler;
+import com.awesome.park.service.telegrammbot.handlers.WakeBoardBookingHandler;
 import com.awesome.park.util.BotState;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
 @Component
@@ -18,7 +19,11 @@ public class BotMainService extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
     private final UserBotDataStorage userBotDataStorage;
-    private final BotServiceHandler botServiceHandler;
+    private final InlineButtonKeyboard keyboard;
+    private final CallbackQueryHandler callbackQueryHandler;
+    private final WakeBoardBookingHandler bookingHandler;
+    private final EventsHandler eventsHandler;
+    private Long chatId;
 
     @Override
     public String getBotUsername() {
@@ -31,37 +36,46 @@ public class BotMainService extends TelegramLongPollingBot {
     }
 
     @Override
+    @SneakyThrows
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            Message message = update.getMessage();
-            String chatId = message.getChatId().toString();
-            String phoneNumber = userBotDataStorage.getUsersPhoneNumbers().getOrDefault(message.getFrom().getId(), "");
-            String name = "Telegram: " + update.getMessage().getFrom().getFirstName() + " " + update.getMessage().getFrom().getLastName();
-
-            BotState currentState = userBotDataStorage.getUsersBotStates().getOrDefault(message.getFrom().getId(), BotState.START);
-
-            switch (currentState) {
-                case START -> {
-                    if (message.getText().equalsIgnoreCase("/booking")) {
-                        executeSafely(botServiceHandler.handleStartCommand(chatId));
-                        userBotDataStorage.getUsersBotStates().put(message.getFrom().getId(), BotState.WAIT_FOR_PHONE);
-                    }
-                }
-                case WAIT_FOR_PHONE ->
-                        executeSafely(botServiceHandler.handlePhoneNumberInput(message, chatId, phoneNumber, name));
-                case WAIT_FOR_BOOKING_TIME ->
-                        executeSafely(botServiceHandler.handleBookingTimeInput(message, chatId, phoneNumber, name));
-            }
+            chatId = update.getMessage().getChatId();
+            String message = update.getMessage().getText();
+            // Получение текущего состояния пользователя из хранилища
+            BotState currentState = userBotDataStorage.getUsersBotStates().getOrDefault(chatId, BotState.START);
+            // Обработка состояний
+            stateBookingProcessing(update, chatId, message, currentState);
+        } else if (update.hasCallbackQuery()) {
+            execute(callbackQueryHandler.handleCallbackQuery(update,chatId));
         }
     }
 
-    private void executeSafely(SendMessage message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
+    @SneakyThrows
+    private void stateBookingProcessing(Update update, Long chatId , String message, BotState currentState) {
+        switch (currentState) {
+            case START -> {
+                if (message.equals("/start")) {
+                    execute(keyboard.buildInlineButtonMenu(chatId));
+                }
+            }
+            case WAIT_FOR_NAME_AND_SURNAME -> {
+                execute(bookingHandler.checkNameAndSurname(update));
+            }
+            case WAIT_FOR_PHONE -> {
+                execute(bookingHandler.checkPhone(update,chatId));
+            }
+            case WAIT_FOR_BOOKING_TIME -> {
+                execute(bookingHandler.buildBookingTimeButtonMenu(chatId));
+            }
+            case WAIT_FOR_CONFIRMATION -> {
+                execute(bookingHandler.checkConfirmation(update));
+            }
+
+            // Другие состояния
         }
     }
 }
+
+
 
 

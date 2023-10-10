@@ -50,6 +50,10 @@ keycloak:
     pathCacheConfig:
       lifespan: 300000
       maxEntries: 1000
+#booking:
+#  startTime: 10:00
+#  endTime: 21:00
+#  timeSlotIntervalMinutes: 30
 
 application:
   title: Be awesome
@@ -57,3 +61,4 @@ application:
   telegram:
     name: ${TELEGRAM_NAME}
     token: ${TELEGRAM_TOKEN}
+

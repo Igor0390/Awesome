@@ -12,9 +12,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, UUID> {
-    List<Booking> findByPhoneAndName(String phone, String name);
+public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+/*    List<Booking> findByPhoneAndName(String phone, String name);
 
     @Query("SELECT b FROM Booking b WHERE b.time >= :startTime AND b.time < :endTime")
-    List<Booking> findByTimeBetween(@Param("startTime") Instant startTime, @Param("endTime") Instant endTime);
+    List<Booking> findByTimeBetween(@Param("startTime") Instant startTime, @Param("endTime") Instant endTime);*/
 }
