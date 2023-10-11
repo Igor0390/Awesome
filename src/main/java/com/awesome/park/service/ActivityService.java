@@ -34,6 +34,15 @@ public class ActivityService {
         activity = activityRepository.save(activity);
         return activityMapper.mapToDto(activity);
     }
+    public Long getActivityIdByName(String activityName) {
+        Activity activity = activityRepository.findByName(activityName);
+        if (activity != null) {
+            return activity.getId();
+        } else {
+            throw new IllegalArgumentException("Активность с указанным именем не найдена: " + activityName);
+        }
+    }
+
 
     public void deleteActivityById(Long id) {
         activityRepository.deleteById(id);

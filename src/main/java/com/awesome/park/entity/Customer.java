@@ -10,12 +10,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.Set;
 
 
 @Entity
@@ -48,6 +46,4 @@ public class Customer {
     @JoinColumn(name = "telegram_info_id")
     private TelegramInfo telegramInfo;
 
-    @OneToMany(mappedBy = "customer")
-    private Set<Booking> bookings;
 }

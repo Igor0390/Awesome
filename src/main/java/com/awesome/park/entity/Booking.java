@@ -5,12 +5,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -24,17 +22,17 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+
     @JoinColumn(name = "activity_id", nullable = false)
-    private Activity activity;
+    private Long activityId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+
     @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    private Long customerId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+
     @JoinColumn(name = "employee_id")
-    private Employee employee;
+    private Long employeeId;
 
     @NotNull(message = "Время бронирования не может быть пустым")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

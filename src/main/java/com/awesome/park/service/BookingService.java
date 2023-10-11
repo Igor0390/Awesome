@@ -28,6 +28,7 @@ public class BookingService {
                 .map(bookingMapper::mapToDto)
                 .collect(Collectors.toList());
     }
+
     public List<LocalDateTime> getAvailableBookingTimes() {
         // Создаем список всех временных слотов с интервалом в 30 минут
         List<LocalDateTime> allTimeSlots = new ArrayList<>();
@@ -58,6 +59,26 @@ public class BookingService {
         Booking savedBooking = bookingRepository.save(booking);
         return bookingMapper.mapToDto(savedBooking);
     }
+
+    public void createOrUpdateBooking(Booking booking) {
+        // Проверяем, существует ли запись с таким же пользователем и временем
+        Booking existingBooking = getByCustomerId(booking.getCustomerId());
+
+        if (existingBooking != null) {
+            // Если запись существует, обновляем ее данные
+            existingBooking.setEmployeeId(booking.getEmployeeId());
+            // Другие обновления полей
+            bookingRepository.save(existingBooking);
+        } else {
+            // Если запись не существует, создаем новую
+            bookingRepository.save(booking);
+        }
+    }
+
+    public Booking getByCustomerId(Long customerId) {
+        return bookingRepository.findByCustomerId(customerId);
+    }
+
 
     public void deleteBookingById(Long id) {
         bookingRepository.deleteById(id);
