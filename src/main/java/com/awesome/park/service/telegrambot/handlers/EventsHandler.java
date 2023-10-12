@@ -1,4 +1,4 @@
-package com.awesome.park.service.telegrammbot.handlers;
+package com.awesome.park.service.telegrambot.handlers;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;

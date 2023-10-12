@@ -1,9 +1,11 @@
-package com.awesome.park.service.telegrammbot;
+package com.awesome.park.service.telegrambot;
 
 
 import com.awesome.park.config.botconfig.BotConfig;
-import com.awesome.park.service.telegrammbot.handlers.CallbackQueryHandler;
-import com.awesome.park.service.telegrammbot.handlers.WakeBoardBookingHandler;
+import com.awesome.park.service.telegrambot.handlers.BaseBookingHandler;
+import com.awesome.park.service.telegrambot.handlers.CallbackQueryHandler;
+import com.awesome.park.service.telegrambot.handlers.SupBoardHandler;
+import com.awesome.park.service.telegrambot.handlers.WakeBoardBookingHandler;
 import com.awesome.park.util.BotState;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,7 +22,9 @@ public class BotMainService extends TelegramLongPollingBot {
     private final UserBotDataStorage userBotDataStorage;
     private final InlineButtonKeyboard keyboard;
     private final CallbackQueryHandler callbackQueryHandler;
-    private final WakeBoardBookingHandler bookingHandler;
+    private final WakeBoardBookingHandler wakeBoardBookingHandler;
+    private final SupBoardHandler supBoardHandler;
+    private final BaseBookingHandler baseBookingHandler;
     private Long chatId;
 
     @Override
@@ -56,10 +60,15 @@ public class BotMainService extends TelegramLongPollingBot {
                     execute(keyboard.buildInlineButtonMenu(chatId));
                 }
             }
-            case WAIT_FOR_NAME_AND_SURNAME -> execute(bookingHandler.checkNameAndSurname(update));
-            case WAIT_FOR_PHONE -> execute(bookingHandler.checkPhone(update, chatId));
-            case WAIT_FOR_BOOKING_TIME -> execute(bookingHandler.buildBookingTimeButtonMenu(chatId, " "));
-            case WAIT_FOR_CONFIRMATION -> execute(bookingHandler.checkConfirmation(update));
+            case WAKE_WAIT_FOR_NAME_AND_SURNAME -> execute(baseBookingHandler.checkNameAndSurname(update, BotState.WAKE_WAIT_FOR_PHONE));
+            case WAKE_WAIT_FOR_PHONE -> execute(baseBookingHandler.checkPhone(update, chatId, BotState.WAKE_WAIT_FOR_BOOKING_TIME));
+            case WAKE_WAIT_FOR_BOOKING_TIME -> execute(wakeBoardBookingHandler.buildBookingTimeButtonMenu(chatId, " ", BotState.WAKE_WAIT_FOR_CONFIRMATION));
+            case WAKE_WAIT_FOR_CONFIRMATION -> execute(wakeBoardBookingHandler.checkConfirmation(update));
+
+            case SUP_BOARD_WAIT_FOR_NAME_AND_SURNAME -> execute(baseBookingHandler.checkNameAndSurname(update, BotState.SUP_BOARD_WAIT_FOR_PHONE));
+            case SUP_BOARD_WAIT_FOR_PHONE -> execute(baseBookingHandler.checkPhone(update, chatId, BotState.SUP_BOARD_WAIT_FOR_SUP_BOOKING_TIME));
+            case SUP_BOARD_WAIT_FOR_SUP_BOOKING_TIME -> execute(supBoardHandler.buildSupTimeButtonMenu(chatId," " , BotState.SUP_BOARD_WAIT_FOR_CONFIRMATION));
+            case SUP_BOARD_WAIT_FOR_CONFIRMATION -> execute(supBoardHandler.checkConfirmation(update));
 
             // Другие состояния
         }

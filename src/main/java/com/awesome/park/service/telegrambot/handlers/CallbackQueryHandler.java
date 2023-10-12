@@ -1,4 +1,4 @@
-package com.awesome.park.service.telegrammbot.handlers;
+package com.awesome.park.service.telegrambot.handlers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -15,7 +15,6 @@ public class CallbackQueryHandler {
     private final SupBoardHandler supBoardHandler;
     private final EventsHandler eventsHandler;
 
-
     @SneakyThrows
     public SendMessage handleCallbackQuery(Update update, Long chatId) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
@@ -30,7 +29,7 @@ public class CallbackQueryHandler {
             }
             case "rent_sup_board" -> {
                 // Вызываем обработчик для аренды сап-бордов
-                return supBoardHandler.handleSupBoardBooking(update);
+                return supBoardHandler.handleSupBoardBooking(update, chatId);
             }
             case "events" -> {
                 // Вызываем обработчик для отображения ближайших событий
