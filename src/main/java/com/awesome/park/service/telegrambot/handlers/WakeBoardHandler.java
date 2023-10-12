@@ -2,7 +2,6 @@ package com.awesome.park.service.telegrambot.handlers;
 
 import com.awesome.park.entity.Booking;
 import com.awesome.park.entity.TelegramInfo;
-import com.awesome.park.service.ActivityService;
 import com.awesome.park.service.BookingService;
 import com.awesome.park.service.CustomerService;
 import com.awesome.park.service.TelegramInfoService;
@@ -19,25 +18,26 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.awesome.park.service.telegrambot.handlers.BaseBookingHandler.currentUserName;
-import static com.awesome.park.service.telegrambot.handlers.BaseBookingHandler.findedCustomer;
+import static com.awesome.park.service.telegrambot.handlers.BaseBookingHandler.foundCustomer;
 import static com.awesome.park.service.telegrambot.handlers.BaseBookingHandler.telegramUserName;
+import static com.awesome.park.util.ActivityType.WAKE_BOARD;
 
 @Component
 @RequiredArgsConstructor
-public class WakeBoardBookingHandler {
+public class WakeBoardHandler {
 
     private final BookingService bookingService;
 
     private final TelegramInfoService telegramInfoService;
     private final UserBotDataStorage userBotDataStorage;
     private final CustomerService customerService;
-    private final ActivityService activityService;
 
     private LocalDateTime selectedTime;
 
@@ -51,11 +51,11 @@ public class WakeBoardBookingHandler {
         String response;
         if (user != null) {
             // Пользователь найден, предложим выбрать дату и время бронирования
-            findedCustomer = customerService.getCustomerByTelegramInfoId(user.getId());
+            foundCustomer = customerService.getCustomerByTelegramInfoId(user.getId());
             return buildBookingTimeButtonMenu(chatId, " дружище я тебя помню ! ", BotState.WAKE_WAIT_FOR_CONFIRMATION);
         } else {
             // Пользователь не найден, создаем нового
-            response = "Прежде чем записаться и катать давай познакомимся! Введи пожалуйста свое Имя и Фамилию";
+            response = "Прежде чем записаться и катать на вейке давай познакомимся! Введи пожалуйста свое Имя и Фамилию точно так же как в этом примере: Роман Кацапов";
             userBotDataStorage.getUsersBotStates().put(callbackQuery.getMessage().getChatId(), BotState.WAKE_WAIT_FOR_NAME_AND_SURNAME);
 
         }
@@ -63,13 +63,14 @@ public class WakeBoardBookingHandler {
     }
 
     public SendMessage buildBookingTimeButtonMenu(Long chatId, String text, BotState botState) {
+
         // проверяем если текущий пользователь это уже записанный пользователь, то указываем его как найденного
         if (currentUserName == null) {
-            currentUserName = findedCustomer.getFirstName();
+            currentUserName = foundCustomer.getFirstName();
         }
-        List<LocalDateTime> availableBookingTimes = bookingService.getAvailableBookingTimes();
-        userBotDataStorage.getUsersBotStates().put(chatId, botState);
+        List<LocalDateTime> availableBookingTimes = bookingService.getAvailableBookingTimes(Duration.ofMinutes(30), WAKE_BOARD.getId());
         InlineKeyboardMarkup keyboard = createInlineKeyboard(availableBookingTimes);
+        userBotDataStorage.getUsersBotStates().put(chatId, botState);
         return SendMessage.builder()
                 .chatId(chatId)
                 .text("Эгееей, " + currentUserName + text + "! Скорее выбирай время каталки:")
@@ -77,7 +78,7 @@ public class WakeBoardBookingHandler {
                 .replyMarkup(keyboard).build();
     }
 
-    private InlineKeyboardMarkup createInlineKeyboard(List<LocalDateTime> availableTimes) {
+    public InlineKeyboardMarkup createInlineKeyboard(List<LocalDateTime> availableTimes) {
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
         List<InlineKeyboardButton> currentRow = new ArrayList<>();
@@ -106,9 +107,10 @@ public class WakeBoardBookingHandler {
         return keyboard;
     }
 
+
     public SendMessage handleTimeSlotCallback(Long chatId, String callbackData) {
         if (currentUserName == null) {
-            currentUserName = findedCustomer.getFirstName();
+            currentUserName = foundCustomer.getFirstName();
         }
 
         String timeSlot = callbackData.replace("TIME_SLOT:", "");
@@ -140,7 +142,6 @@ public class WakeBoardBookingHandler {
         return message;
     }
 
-
     public SendMessage checkConfirmation(Update update) {
         String chatId = update.getMessage().getChatId().toString();
         String confirmation = update.getMessage().getText().toLowerCase(); // Приведем к нижнему регистру для удобства
@@ -151,14 +152,15 @@ public class WakeBoardBookingHandler {
             Long customerId = customerService.getCustomerByTelegramInfoId(user.getId()).getId();
             Booking booking = new Booking();
             booking.setCustomerId(customerId); // Связываем с текущим пользователем
-            booking.setActivityId(activityService.getActivityIdByName("Катание на вейк-борде"));
+            booking.setActivityId(WAKE_BOARD.getId());
             booking.setBookingTime(selectedTime); // selectedTime - это время, которое выбрал пользователь
 
-            if (bookingService.getByCustomerId(customerId) == null) {
+            if (bookingService.getByCustomerIdAndActivityId(customerId, WAKE_BOARD.getId()) == null) {
 
                 bookingService.createOrUpdateBooking(booking); // Сохраняем в базе данных
                 return new SendMessage(chatId, "Ура! Записал тебя на каталку на выбранное время.");
             }
+            userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.STOP_BOT);
             return new SendMessage(chatId, "Ой, кажется я тебя уже записывал");
 
         } else if (confirmation.equals("нет")) {
@@ -166,7 +168,8 @@ public class WakeBoardBookingHandler {
             userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.WAKE_WAIT_FOR_BOOKING_TIME);
             return buildBookingTimeButtonMenu(update.getMessage().getChatId(), " чего стесняешься ???", BotState.WAKE_WAIT_FOR_CONFIRMATION);
         } else {
-            return new SendMessage(chatId, "Пожалуйста, выбери 'да' или 'нет'.");
+            userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.STOP_BOT);
+            return new SendMessage(chatId, "ох...не понимаю тебя...");
         }
     }
 

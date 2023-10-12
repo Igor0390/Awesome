@@ -20,10 +20,10 @@ public class BaseBookingHandler {
     private final TelegramInfoService telegramInfoService;
     private final CustomerService customerService;
     private final UserBotDataStorage userBotDataStorage;
-    private final WakeBoardBookingHandler wakeBoardBookingHandler;
+    private final WakeBoardHandler wakeBoardHandler;
     private final SupBoardHandler supBoardHandler;
     private final Customer customer = new Customer();
-    static Customer findedCustomer;
+    static Customer foundCustomer;
     static String currentUserName;
     static String telegramUserName;
 
@@ -51,7 +51,9 @@ public class BaseBookingHandler {
                 // Меняем состояние
                 userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), botState);
                 // Отправляем пользователю подтверждение
-                return new SendMessage(chatId, "Круть, рад знакомству с тобой, " + firstName + " " + lastName + "! Теперь введи пожалуйста свой номер телефона в формате +7XXXXXXXXXX");
+                return new SendMessage(chatId, "Круть, рад знакомству с тобой, "
+                        + firstName
+                        + "! Теперь введи пожалуйста свой номер телефона в формате +7XXXXXXXXXX");
             }
         } else {
             // Если длина массива не равна 2, отправим сообщение об ошибке
@@ -59,7 +61,7 @@ public class BaseBookingHandler {
         }
     }
 
-    public SendMessage checkPhone(Update update, Long chatId, BotState botState) {
+    public SendMessage checkPhone(Update update, Long chatId, BotState state) {
 
         String phoneNumber = update.getMessage().getText();
         String id = chatId.toString();
@@ -71,12 +73,12 @@ public class BaseBookingHandler {
         // Обновляем Сохраняем объект Customer с номером телефона
         saveInDataBase(update, phoneNumber);
         //меняем состояние
-        userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), botState);
+        userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), state);
         // Сразу херачим пользователю выбор времени
-        if (botState == BotState.WAKE_WAIT_FOR_BOOKING_TIME) {
-            return wakeBoardBookingHandler.buildBookingTimeButtonMenu(chatId, " это будет AWESOME! ", BotState.WAKE_WAIT_FOR_CONFIRMATION);
-        } else if (botState == BotState.SUP_BOARD_WAIT_FOR_SUP_BOOKING_TIME) {
-            return supBoardHandler.buildSupTimeButtonMenu(chatId, " SUP это будет AWESOME! ", BotState.SUP_BOARD_WAIT_FOR_CONFIRMATION);
+        if (state == BotState.WAKE_WAIT_FOR_BOOKING_TIME) {
+            return wakeBoardHandler.buildBookingTimeButtonMenu(chatId, " наши вейборды: AWESOME! ", BotState.WAKE_WAIT_FOR_CONFIRMATION);
+        } else if (state == BotState.SUP_BOARD_WAIT_FOR_SUP_BOOKING_TIME) {
+            return supBoardHandler.buildSupTimeButtonMenu(chatId, " наши сап-борды: AWESOME! ", BotState.SUP_BOARD_WAIT_FOR_CONFIRMATION);
         }
         return new SendMessage(id, "после записи номера телефона, что-то пошло не так");
     }

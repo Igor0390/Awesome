@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequiredArgsConstructor
 public class CallbackQueryHandler {
 
-    private final WakeBoardBookingHandler bookingHandler;
+    private final WakeBoardHandler bookingHandler;
     private final SupBoardHandler supBoardHandler;
     private final EventsHandler eventsHandler;
 
@@ -21,6 +21,10 @@ public class CallbackQueryHandler {
         String callbackData = callbackQuery.getData();
         if (callbackData.startsWith("TIME_SLOT:")) {
             return bookingHandler.handleTimeSlotCallback(chatId, callbackData);
+        } else if( callbackData.startsWith("SUP_BOARD_TIME_SLOT:")){
+            return supBoardHandler.createSupBoardKeyboard(chatId, callbackData);
+        }else if( callbackData.startsWith("BOARD_COUNT:")){
+            return supBoardHandler.checkConfirmation(update);
         }
         switch (callbackData) {
             case "wake_boarding_booking" -> {
