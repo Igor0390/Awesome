@@ -1,13 +1,11 @@
-package com.awesome.park.service.telegrammbot.handlers;
+package com.awesome.park.service.telegrambot.handlers;
 
 import com.awesome.park.entity.Booking;
-import com.awesome.park.entity.Customer;
 import com.awesome.park.entity.TelegramInfo;
-import com.awesome.park.service.ActivityService;
 import com.awesome.park.service.BookingService;
 import com.awesome.park.service.CustomerService;
 import com.awesome.park.service.TelegramInfoService;
-import com.awesome.park.service.telegrammbot.UserBotDataStorage;
+import com.awesome.park.service.telegrambot.UserBotDataStorage;
 import com.awesome.park.util.BotState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,121 +18,67 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.awesome.park.util.ValidationUtils.isValidNameAndSurname;
-import static com.awesome.park.util.ValidationUtils.isValidPhoneNumber;
+import static com.awesome.park.service.telegrambot.handlers.BaseBookingHandler.currentUserName;
+import static com.awesome.park.service.telegrambot.handlers.BaseBookingHandler.foundCustomer;
+import static com.awesome.park.service.telegrambot.handlers.BaseBookingHandler.telegramUserName;
+import static com.awesome.park.util.ActivityType.WAKE_BOARD;
 
 @Component
 @RequiredArgsConstructor
-public class WakeBoardBookingHandler {
+public class WakeBoardHandler {
 
     private final BookingService bookingService;
 
     private final TelegramInfoService telegramInfoService;
     private final UserBotDataStorage userBotDataStorage;
     private final CustomerService customerService;
-    private final ActivityService activityService;
 
-    private final Customer customer = new Customer();
-    private String telegramUserName;
-    private String currentUserName;
-    private Customer findedCustomer;
     private LocalDateTime selectedTime;
 
 
     public SendMessage handleWakeBoardBooking(Update update, Long chatId) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
-
         //получим никнейм юзера из телеги
         telegramUserName = callbackQuery.getFrom().getUserName();
-
         // Попробуем найти пользователя по userName (нику в телеге)
         TelegramInfo user = telegramInfoService.findByUsername(telegramUserName);
         String response;
         if (user != null) {
             // Пользователь найден, предложим выбрать дату и время бронирования
-            findedCustomer = customerService.getCustomerByTelegramInfoId(user.getId());
-            return buildBookingTimeButtonMenu(chatId, " дружище я тебя помню ! ");
+            foundCustomer = customerService.getCustomerByTelegramInfoId(user.getId());
+            return buildBookingTimeButtonMenu(chatId, " дружище я тебя помню ! ", BotState.WAKE_WAIT_FOR_CONFIRMATION);
         } else {
             // Пользователь не найден, создаем нового
-            response = "Прежде чем записаться и катать давай познакомимся! Введи пожалуйста свое Имя и Фамилию";
-            userBotDataStorage.getUsersBotStates().put(callbackQuery.getMessage().getChatId(), BotState.WAIT_FOR_NAME_AND_SURNAME);
+            response = "Прежде чем записаться и катать на вейке давай познакомимся! Введи пожалуйста свое Имя и Фамилию точно так же как в этом примере: Роман Кацапов";
+            userBotDataStorage.getUsersBotStates().put(callbackQuery.getMessage().getChatId(), BotState.WAKE_WAIT_FOR_NAME_AND_SURNAME);
 
         }
         return new SendMessage(chatId.toString(), response);
     }
 
+    public SendMessage buildBookingTimeButtonMenu(Long chatId, String text, BotState botState) {
 
-    public SendMessage checkNameAndSurname(Update update) {
-        String messageText = update.getMessage().getText();
-        String chatId = update.getMessage().getChatId().toString();
-
-        // Разделим текст сообщения по пробелу
-        String[] nameAndSurname = messageText.split(" ");
-
-        // Проверим, что массив имеет длину 2
-        if (nameAndSurname.length == 2) {
-            String firstName = nameAndSurname[0];
-            String lastName = nameAndSurname[1];
-
-            // Проверим валидность имени и фамилии, тут статические методы проверки
-            if (!isValidNameAndSurname(firstName, lastName)) {
-                return new SendMessage(chatId, "Пожалуйста, введи корректные имя и фамилию. Точно так же как в примере: Роман Кацапов");
-            } else {
-                // Заполняем нашего пользака
-                customer.setFirstName(firstName);
-                customer.setLastName(lastName);
-                // если текущий пользак новый, ему нужно задать имя
-                currentUserName = firstName;
-                // Меняем состояние
-                userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.WAIT_FOR_PHONE);
-                // Отправляем пользователю подтверждение
-                return new SendMessage(chatId, "Круть, рад знакомству с тобой, " + firstName + " " + lastName + "! Теперь введи пожалуйста свой номер телефона в формате +7XXXXXXXXXX");
-            }
-        } else {
-            // Если длина массива не равна 2, отправим сообщение об ошибке
-            return new SendMessage(chatId, "Пожалуйста, введи имя и фамилию через пробел. Точно так же как в примере: Роман Кацапов");
-        }
-    }
-
-
-    public SendMessage checkPhone(Update update, Long chatId) {
-        String phoneNumber = update.getMessage().getText();
-        String id = chatId.toString();
-        // Проверим, что введен корректный номер телефона
-        if (!isValidPhoneNumber(phoneNumber)) {
-            // Если номер телефона некорректен, отправим пользователю сообщение об ошибке
-            return new SendMessage(id, "Некорректный формат номера телефона. Пожалуйста, введи номер в формате +7XXXXXXXXXX.");
-        }
-        // Обновляем Сохраняем объект Customer с номером телефона
-        saveInDataBase(update, phoneNumber);
-        //меняем состояние
-        userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.WAIT_FOR_BOOKING_TIME);
-        // Сразу херачим пользователю выбор времени
-
-        return buildBookingTimeButtonMenu(chatId, " это будет AWESOME! ");
-    }
-
-    public SendMessage buildBookingTimeButtonMenu(Long chatId, String text) {
         // проверяем если текущий пользователь это уже записанный пользователь, то указываем его как найденного
         if (currentUserName == null) {
-            currentUserName = findedCustomer.getFirstName();
+            currentUserName = foundCustomer.getFirstName();
         }
-        List<LocalDateTime> availableBookingTimes = bookingService.getAvailableBookingTimes();
-        userBotDataStorage.getUsersBotStates().put(chatId, BotState.WAIT_FOR_CONFIRMATION);
+        List<LocalDateTime> availableBookingTimes = bookingService.getAvailableBookingTimes(Duration.ofMinutes(30), WAKE_BOARD.getId());
         InlineKeyboardMarkup keyboard = createInlineKeyboard(availableBookingTimes);
+        userBotDataStorage.getUsersBotStates().put(chatId, botState);
         return SendMessage.builder()
                 .chatId(chatId)
-                .text("Эгееей, " + currentUserName + text +"! Скорее выбирай время каталки:")
+                .text("Эгееей, " + currentUserName + text + "! Скорее выбирай время каталки:")
                 .parseMode("Markdown")
                 .replyMarkup(keyboard).build();
     }
 
-    private InlineKeyboardMarkup createInlineKeyboard(List<LocalDateTime> availableTimes) {
+    public InlineKeyboardMarkup createInlineKeyboard(List<LocalDateTime> availableTimes) {
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
         List<InlineKeyboardButton> currentRow = new ArrayList<>();
@@ -163,9 +107,10 @@ public class WakeBoardBookingHandler {
         return keyboard;
     }
 
+
     public SendMessage handleTimeSlotCallback(Long chatId, String callbackData) {
         if (currentUserName == null) {
-            currentUserName = findedCustomer.getFirstName();
+            currentUserName = foundCustomer.getFirstName();
         }
 
         String timeSlot = callbackData.replace("TIME_SLOT:", "");
@@ -197,7 +142,6 @@ public class WakeBoardBookingHandler {
         return message;
     }
 
-
     public SendMessage checkConfirmation(Update update) {
         String chatId = update.getMessage().getChatId().toString();
         String confirmation = update.getMessage().getText().toLowerCase(); // Приведем к нижнему регистру для удобства
@@ -208,35 +152,25 @@ public class WakeBoardBookingHandler {
             Long customerId = customerService.getCustomerByTelegramInfoId(user.getId()).getId();
             Booking booking = new Booking();
             booking.setCustomerId(customerId); // Связываем с текущим пользователем
-            booking.setActivityId(activityService.getActivityIdByName("Катание на вейк-борде"));
+            booking.setActivityId(WAKE_BOARD.getId());
             booking.setBookingTime(selectedTime); // selectedTime - это время, которое выбрал пользователь
 
-            if(bookingService.getByCustomerId(customerId)== null){
+            if (bookingService.getByCustomerIdAndActivityId(customerId, WAKE_BOARD.getId()) == null) {
 
                 bookingService.createOrUpdateBooking(booking); // Сохраняем в базе данных
                 return new SendMessage(chatId, "Ура! Записал тебя на каталку на выбранное время.");
             }
+            userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.STOP_BOT);
             return new SendMessage(chatId, "Ой, кажется я тебя уже записывал");
 
         } else if (confirmation.equals("нет")) {
             // Пользователь отказался от записи, изменяем состояние
-            userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.WAIT_FOR_BOOKING_TIME);
-            return buildBookingTimeButtonMenu(update.getMessage().getChatId(), " чего стесняешься ???");
+            userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.WAKE_WAIT_FOR_BOOKING_TIME);
+            return buildBookingTimeButtonMenu(update.getMessage().getChatId(), " чего стесняешься ???", BotState.WAKE_WAIT_FOR_CONFIRMATION);
         } else {
-            return new SendMessage(chatId, "Пожалуйста, выбери 'да' или 'нет'.");
+            userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), BotState.STOP_BOT);
+            return new SendMessage(chatId, "ох...не понимаю тебя...");
         }
-    }
-
-
-    private void saveInDataBase(Update update, String phoneNumber) {
-        customer.setPhoneNumber(phoneNumber);
-        TelegramInfo telegramInfo = new TelegramInfo();
-        telegramInfo.setChatId(update.getMessage().getChatId());
-        telegramInfo.setUsername(telegramUserName);
-        telegramInfoService.createOrUpdateTelegramInfo(telegramInfo);
-        customer.setTelegramInfo(telegramInfo);
-        customerService.createOrUpdateCustomer(customer);
-
     }
 
 }

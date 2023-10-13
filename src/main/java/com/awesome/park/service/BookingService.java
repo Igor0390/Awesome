@@ -7,6 +7,7 @@ import com.awesome.park.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -29,23 +30,36 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    public List<LocalDateTime> getAvailableBookingTimes() {
-        // Создаем список всех временных слотов с интервалом в 30 минут
+    public List<LocalDateTime> getAvailableBookingTimes(Duration interval, Long activityId) {
+        // Создаем список всех временных слотов с указанным интервалом
         List<LocalDateTime> allTimeSlots = new ArrayList<>();
         LocalDateTime startTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(10, 0));
         LocalDateTime endTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 0));
+
         while (startTime.isBefore(endTime)) {
             allTimeSlots.add(startTime);
-            startTime = startTime.plusMinutes(30);
+            startTime = startTime.plus(interval);
         }
 
         // Получаем список всех бронирований
-        List<LocalDateTime> bookedTimeSlots = getAllBookingTimes();
+        List<LocalDateTime> bookedTimeSlots = getAllBookingTimesByActivityId(activityId);
 
-        // Исключаем занятые временные слоты из списка всех временных слотов
-        allTimeSlots.removeAll(bookedTimeSlots);
+        // Если bookedTimeSlots пустой или null, возвращаем полный список временных слотов
+        if (bookedTimeSlots == null || bookedTimeSlots.isEmpty()) {
+            return allTimeSlots;
+        } else {
+            // Исключаем занятые временные слоты из списка всех временных слотов
+            allTimeSlots.removeAll(bookedTimeSlots);
+            return allTimeSlots;
+        }
+    }
 
-        return allTimeSlots;
+
+    private List<LocalDateTime> getAllBookingTimesByActivityId(Long activityId) {
+        List<Booking> bookings = bookingRepository.findByActivityId(activityId);
+        return bookings.stream()
+                .map(Booking::getBookingTime)
+                .collect(Collectors.toList());
     }
 
 
@@ -75,8 +89,18 @@ public class BookingService {
         }
     }
 
+    public void createOrUpdateSupBoardBooking(Booking booking) {
+        // пишем все сапборды в табличку потому что кол-во сапов соответствуют кол-ву записей в таблице
+        bookingRepository.save(booking);
+    }
+
+
     public Booking getByCustomerId(Long customerId) {
         return bookingRepository.findByCustomerId(customerId);
+    }
+
+    public Booking getByCustomerIdAndActivityId(Long customerId, Long activityId) {
+        return bookingRepository.findByCustomerIdAndActivityId(customerId, activityId);
     }
 
 
@@ -84,10 +108,8 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    private List<LocalDateTime> getAllBookingTimes() {
-        List<Booking> bookings = bookingRepository.findAll();
-        return bookings.stream()
-                .map(Booking::getBookingTime)
-                .collect(Collectors.toList());
+
+    public int getSupBoardsCountAtTime(Long activityId, LocalDateTime selectedTime) {
+        return bookingRepository.countBookedSupBoardsAtTime(activityId, selectedTime);
     }
 }
