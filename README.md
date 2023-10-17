@@ -31,7 +31,7 @@
 1. Склонируйте репозиторий с помощью команды:
 
    ```bash
-   git clone https://github.com/yourusername/awesomepark.git
+   git clone https://github.com/Gork1y/Awesome.git
    ```
 
 2. Перейдите в директорию проекта:
