@@ -19,21 +19,15 @@ public class CallbackQueryHandler {
     public SendMessage handleCallbackQuery(Update update, Long chatId) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         String callbackData = callbackQuery.getData();
-        if (callbackData.startsWith("TIME_SLOT:")) {
-            return bookingHandler.handleTimeSlotCallback(chatId, callbackData);
-        } else if( callbackData.startsWith("SUP_BOARD_TIME_SLOT:")){
-            return supBoardHandler.createSupBoardKeyboard(chatId, callbackData);
-        }else if( callbackData.startsWith("BOARD_COUNT:")){
-            return supBoardHandler.checkConfirmation(update);
-        }
+        Long userChatId = callbackQuery.getFrom().getId();
         switch (callbackData) {
             case "wake_boarding_booking" -> {
                 // Вызываем обработчик для записи на катание на вейк-борде
-                return bookingHandler.handleWakeBoardBooking(update,chatId);
+                return bookingHandler.handleWakeBoardBooking(update);
             }
             case "rent_sup_board" -> {
                 // Вызываем обработчик для аренды сап-бордов
-                return supBoardHandler.handleSupBoardBooking(update, chatId);
+                return supBoardHandler.handleSupBoardBooking(update);
             }
             case "events" -> {
                 // Вызываем обработчик для отображения ближайших событий
@@ -42,6 +36,13 @@ public class CallbackQueryHandler {
             default -> {
                 // Обработка других callback-запросов, на будущее
             }
+        }
+        if (callbackData.startsWith("TIME_SLOT:")) {
+            return bookingHandler.handleTimeSlotCallback(userChatId, callbackData);
+        } else if (callbackData.startsWith("SUP_BOARD_TIME_SLOT:")) {
+            return supBoardHandler.createSupBoardKeyboard(chatId, callbackData);
+        } else if (callbackData.startsWith("BOARD_COUNT:")) {
+            return supBoardHandler.checkConfirmation(update);
         }
         return new SendMessage(chatId.toString(), "что-то пошло не так");
     }

@@ -21,7 +21,15 @@ public class BookingResponseDto {
     @Schema(description = "имя пользователя")
     private String name;
 
-    @Schema(description = "время записи")
+    @Schema(description = "фамилия пользователя")
+    private String surname;
 
+    @Schema(description = "Только Калининградское время записи")
     private Instant time;
+
+    @Schema(description = "Тип услуги")
+    private Long activityId;
+
+    @Schema(description = "Количество забронированных услуг")
+    private Integer activityCount;
 }

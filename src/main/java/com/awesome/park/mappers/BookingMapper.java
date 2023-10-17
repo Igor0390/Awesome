@@ -7,4 +7,3 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface BookingMapper extends BaseMapper<BookingDto, Booking> {
 }
-

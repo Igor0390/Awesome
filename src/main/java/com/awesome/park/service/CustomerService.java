@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,10 +23,11 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<CustomerDto> getCustomerById(Long id) {
-        return customerRepository.findById(id)
-                .map(customerMapper::mapToDto);
+    public CustomerDto getCustomerById(Long id) {
+        return customerMapper.mapToDto(customerRepository.findById(id)
+                .orElse(null));
     }
+
 
     public CustomerDto createOrUpdateCustomer(CustomerDto customerDto) {
         Customer customer = customerMapper.mapToEntity(customerDto);
@@ -37,7 +37,6 @@ public class CustomerService {
 
     public void createOrUpdateCustomer(Customer customer) {
         customerRepository.save(customer);
-
     }
 
 
@@ -49,6 +48,10 @@ public class CustomerService {
 
     public Customer getCustomerByTelegramInfoId(Long telegramInfoId) {
        return customerRepository.getCustomerByTelegramInfoId(telegramInfoId);
+    }
+
+    public Customer getCustomerByPhoneNumber(String phone) {
+        return customerRepository.getCustomerByPhoneNumber(phone);
     }
 }
 

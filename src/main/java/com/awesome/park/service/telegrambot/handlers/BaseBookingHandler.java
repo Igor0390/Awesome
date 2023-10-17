@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import javax.transaction.Transactional;
+
 import static com.awesome.park.util.ValidationUtils.isValidNameAndSurname;
 import static com.awesome.park.util.ValidationUtils.isValidPhoneNumber;
 
@@ -22,10 +24,12 @@ public class BaseBookingHandler {
     private final UserBotDataStorage userBotDataStorage;
     private final WakeBoardHandler wakeBoardHandler;
     private final SupBoardHandler supBoardHandler;
-    private final Customer customer = new Customer();
+
     static Customer foundCustomer;
-    static String currentUserName;
+    static String currentUserFirstName;
     static String telegramUserName;
+    private String currentUserLastName;
+    private String currentUserPhoneNumber;
 
     public SendMessage checkNameAndSurname(Update update, BotState botState) {
         String messageText = update.getMessage().getText();
@@ -43,11 +47,9 @@ public class BaseBookingHandler {
             if (!isValidNameAndSurname(firstName, lastName)) {
                 return new SendMessage(chatId, "Пожалуйста, введи корректные имя и фамилию. Точно так же как в примере: Роман Кацапов");
             } else {
-                // Заполняем нашего пользака
-                customer.setFirstName(firstName);
-                customer.setLastName(lastName);
-                // если текущий пользак новый, ему нужно задать имя
-                currentUserName = firstName;
+                // если текущий пользак новый, ему нужно задать имя и фамилию
+                currentUserFirstName = firstName;
+                currentUserLastName = lastName;
                 // Меняем состояние
                 userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), botState);
                 // Отправляем пользователю подтверждение
@@ -62,16 +64,16 @@ public class BaseBookingHandler {
     }
 
     public SendMessage checkPhone(Update update, Long chatId, BotState state) {
-
-        String phoneNumber = update.getMessage().getText();
+        currentUserPhoneNumber = update.getMessage().getText();
         String id = chatId.toString();
         // Проверим, что введен корректный номер телефона
-        if (!isValidPhoneNumber(phoneNumber)) {
+        if (!isValidPhoneNumber(currentUserPhoneNumber)) {
             // Если номер телефона некорректен, отправим пользователю сообщение об ошибке
             return new SendMessage(id, "Некорректный формат номера телефона. Пожалуйста, введи номер в формате +7XXXXXXXXXX.");
         }
         // Обновляем Сохраняем объект Customer с номером телефона
-        saveInDataBase(update, phoneNumber);
+        saveInDataBase(update);
+//        updateCustomerData(currentUserFirstName, currentUserLastName, phoneNumber);
         //меняем состояние
         userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), state);
         // Сразу херачим пользователю выбор времени
@@ -82,15 +84,19 @@ public class BaseBookingHandler {
         }
         return new SendMessage(id, "после записи номера телефона, что-то пошло не так");
     }
-
-
-    private void saveInDataBase(Update update, String phoneNumber) {
-        customer.setPhoneNumber(phoneNumber);
+    @Transactional
+    public void saveInDataBase(Update update) {
         TelegramInfo telegramInfo = new TelegramInfo();
         telegramInfo.setChatId(update.getMessage().getChatId());
         telegramInfo.setUsername(telegramUserName);
+
         telegramInfoService.createOrUpdateTelegramInfo(telegramInfo);
-        customer.setTelegramInfo(telegramInfo);
+        Customer customer = new Customer();
+        customer.setFirstName(currentUserFirstName);
+        customer.setLastName(currentUserLastName);
+        customer.setPhoneNumber(currentUserPhoneNumber);
+        customer.setTelegramInfoId(telegramInfo.getId());
+
         customerService.createOrUpdateCustomer(customer);
     }
 }
