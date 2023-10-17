@@ -50,6 +50,7 @@ keycloak:
     pathCacheConfig:
       lifespan: 300000
       maxEntries: 1000
+
 #booking:
 #  startTime: 10:00
 #  endTime: 21:00

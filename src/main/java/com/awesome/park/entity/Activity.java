@@ -28,5 +28,6 @@ public class Activity {
     @NotNull(message = "Стоимость активности не может быть пустой")
     @DecimalMin(value = "100.00", message = "Стоимость активности должна быть не меньше 100р")
     private BigDecimal price;
+
 }
 
