@@ -57,7 +57,7 @@ public class BotMainService extends TelegramLongPollingBot {
     private void stateBookingProcessing(Update update, Long chatId, String message, BotState currentState) {
         switch (currentState) {
             case START -> {
-                if (message.equals("/start")) {
+                if (message.equals("/start") || message.equals("/start@AwesomePark_bot") ) {
                     execute(keyboard.buildInlineButtonMenu(chatId));
                 }
             }
@@ -75,10 +75,10 @@ public class BotMainService extends TelegramLongPollingBot {
             // Другие состояния
         }
     }
-    public SendMessage returnToInitialState(Long chatId) {
+    public final SendMessage returnToInitialState(Long chatId) {
         // Очистить состояние пользователя в хранилище
         userBotDataStorage.getUsersBotStates().remove(chatId);
-        String response = "Я завершил свою работу и вернулся в начальное состояние!";
+        String response = "Я завершил свою работу и вернулся в начальное состояние! Если хочешь могу помочь снова, жми /start";
         return new SendMessage(chatId.toString(), response);
     }
 

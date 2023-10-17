@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,8 +21,12 @@ public class CustomerRestController implements CustomerApi {
     }
 
     public ResponseEntity<CustomerDto> getCustomerById(Long id) {
-        Optional<CustomerDto> customer = customerService.getCustomerById(id);
-        return customer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        CustomerDto customer = customerService.getCustomerById(id);
+        if (customer != null) {
+            return ResponseEntity.ok(customer);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     public ResponseEntity<CustomerDto> createCustomer(CustomerDto customerDto) {

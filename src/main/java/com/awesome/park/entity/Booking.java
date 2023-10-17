@@ -38,5 +38,8 @@ public class Booking {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "booking_time", nullable = false)
     private LocalDateTime bookingTime;
+
+    @Column(name = "activity_count")
+    private Integer activityCount;
 }
 

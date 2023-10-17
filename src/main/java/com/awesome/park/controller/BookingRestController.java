@@ -2,6 +2,8 @@ package com.awesome.park.controller;
 
 import com.awesome.park.api.BookingApi;
 import com.awesome.park.dto.BookingDto;
+import com.awesome.park.dto.request.BookingRequestDto;
+import com.awesome.park.dto.response.BookingResponseDto;
 import com.awesome.park.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +18,8 @@ public class BookingRestController implements BookingApi {
     private final BookingService bookingService;
 
     @Override
-    public ResponseEntity<List<BookingDto>> getAllBookings() {
-        List<BookingDto> bookings = bookingService.getAllBookings();
+    public ResponseEntity<List<BookingResponseDto>> getAllBookings() {
+        List<BookingResponseDto> bookings = bookingService.getAllBookings();
         return ResponseEntity.ok(bookings);
     }
 
@@ -28,22 +30,22 @@ public class BookingRestController implements BookingApi {
     }
 
     @Override
-    public ResponseEntity<BookingDto> createBooking(BookingDto bookingDto) {
-        BookingDto createdBooking = bookingService.createOrUpdateBooking(bookingDto);
-        return ResponseEntity.ok(createdBooking);
+    public ResponseEntity<String> createBooking(BookingRequestDto requestDto) {
+        bookingService.createOrUpdateBookingAndCustomer(requestDto);
+        return ResponseEntity.ok("Вы успешно записались на каталку");
     }
 
     @Override
-    public ResponseEntity<BookingDto> updateBooking(Long id, BookingDto bookingDto) {
+    public ResponseEntity<String> updateBooking(Long id, BookingDto bookingDto) {
         bookingDto.setId(id);
-        BookingDto updatedBooking = bookingService.createOrUpdateBooking(bookingDto);
-        return ResponseEntity.ok(updatedBooking);
+        bookingService.createOrUpdateBookingAndCustomer(bookingDto);
+        return ResponseEntity.ok("Вы успешно обновили запись");
     }
 
     @Override
-    public ResponseEntity<Void> deleteBooking(Long id) {
+    public ResponseEntity<String> deleteBooking(Long id) {
         bookingService.deleteBookingById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Запись успешно удалена");
     }
 }
 

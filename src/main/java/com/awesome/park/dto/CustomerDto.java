@@ -20,5 +20,5 @@ public class CustomerDto {
     private String phoneNumber;
 
     @Schema(description = "Информация о Telegram клиента")
-    private TelegramInfoDto telegramInfo;
+    private Long telegramInfoId;
 }
