@@ -78,7 +78,7 @@ public class BaseBookingHandler {
         userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), state);
         // Сразу херачим пользователю выбор времени
         if (state == BotState.WAKE_WAIT_FOR_BOOKING_TIME) {
-            return wakeBoardHandler.buildBookingTimeButtonMenu(chatId, " наши вейборды: AWESOME! ", BotState.WAKE_WAIT_FOR_CONFIRMATION);
+            return wakeBoardHandler.buildBookingTimeButtonMenu(chatId, " наши вейкборды: AWESOME! ", BotState.WAKE_WAIT_FOR_CONFIRMATION);
         } else if (state == BotState.SUP_BOARD_WAIT_FOR_SUP_BOOKING_TIME) {
             return supBoardHandler.buildSupTimeButtonMenu(chatId, " наши сап-борды: AWESOME! ", BotState.SUP_BOARD_WAIT_FOR_CONFIRMATION);
         }
