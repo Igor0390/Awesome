@@ -9,8 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static com.awesome.park.util.ActivityType.WAKE_BOARD;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +31,10 @@ public class BookingRestController implements BookingApi {
     public ResponseEntity<BookingDto> getBookingById(Long id) {
         Optional<BookingDto> booking = bookingService.getBookingById(id);
         return booking.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @Override
+    public List<LocalDateTime> getAvailableWakeBookingTimes(){
+        return bookingService.getAvailableBookingTimes(Duration.ofMinutes(30), WAKE_BOARD.getId());
     }
 
     @Override

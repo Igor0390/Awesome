@@ -65,12 +65,10 @@ public class BookingService {
 
         List<LocalDateTime> bookedTimeSlots = getAllBookingTimesByActivityId(activityId);
 
-        if (bookedTimeSlots == null || bookedTimeSlots.isEmpty()) {
-            return allTimeSlots;
-        } else {
+        if (bookedTimeSlots != null && !bookedTimeSlots.isEmpty()) {
             allTimeSlots.removeAll(bookedTimeSlots);
-            return allTimeSlots;
         }
+        return allTimeSlots;
     }
 
     public List<LocalDateTime> getAvailableBookingTimesForSupBoards(Duration interval, Long activityId, Integer maxCapacity, LocalDateTime selectedTime) {
@@ -160,7 +158,6 @@ public class BookingService {
     }
 
     public void createOrUpdateSupBoardBooking(Booking booking) {
-        // пишем все сапборды в табличку потому что кол-во сапов соответствуют кол-ву записей в таблице
         bookingRepository.save(booking);
     }
 

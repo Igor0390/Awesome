@@ -56,7 +56,12 @@ public class SupBoardHandler {
             return buildSupTimeButtonMenu(chatId, " дружище !", BotState.SUP_BOARD_WAIT_FOR_CONFIRMATION);
         } else {
             // Пользователь не найден, создаем нового
-            response = "Прежде чем записаться и покорять сап-борд, давай познакомимся! Введи пожалуйста свое Имя и Фамилию, точно так же как в этом примере: Роман Кацапов";
+            response = """
+                    Прежде чем записаться и покорять сап-борд, давай познакомимся!
+
+                     Введи пожалуйста свое Имя и Фамилию, точно так же как в этом примере:
+
+                     Роман Кацапов""";
             userBotDataStorage.getUsersBotStates().put(callbackQuery.getMessage().getChatId(), BotState.SUP_BOARD_WAIT_FOR_NAME_AND_SURNAME);
 
         }
@@ -205,7 +210,7 @@ public class SupBoardHandler {
         } else if (num <= 0) {
             return new SendMessage(chatId.toString(), "Пожалуйста, введи количество сап-бордов больше 0.");
         } else {
-            return createErrorMessage(chatId, num);
+            return createErrorMessage(chatId);
         }
     }
 
@@ -225,18 +230,22 @@ public class SupBoardHandler {
     }
 
     private SendMessage createSuccessMessage(Long chatId, int num) {
-        String successMessage = "Поздравляю, " + currentUserFirstName + "  тобой было забронировано " + num + " " + getSupBoardMessage(num) + ". Приятного катания!";
+        String successMessage = "Поздравляю, "
+                + currentUserFirstName
+                + "  тобой было забронировано "
+                + num + " "
+                + getSupBoardMessage(num)
+                + ". Приятного катания!";
         userBotDataStorage.getUsersBotStates().put(chatId, BotState.STOP_BOT);
         return new SendMessage(chatId.toString(), successMessage);
     }
 
-    private SendMessage createErrorMessage(Long chatId, int num) {
+    private SendMessage createErrorMessage(Long chatId) {
         userBotDataStorage.getUsersBotStates().put(chatId, BotState.SUP_BOARD_WAIT_FOR_CONFIRMATION);
-        return new SendMessage(chatId.toString(), "Ага я тебя понял, но на это время по прежнему доступно: "
-                + availableNum
-                +" "
-                + getSupBoardMessage(num)
-                + ". Пожалуйста, выбери другое время из таблички выше");
+        return new SendMessage(chatId.toString(), """
+                Ага я тебя понял, но на это время по прежнему нет доступных сапов.\s
+
+                Пожалуйста, выбери другое время из таблички выше""");
     }
 
 

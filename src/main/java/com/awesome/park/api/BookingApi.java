@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Управление бронированиями")
@@ -24,6 +26,12 @@ public interface BookingApi {
     @ApiResponse(responseCode = "404", description = "Бронирование не найдено")
     @GetMapping("/{id}")
     ResponseEntity<BookingDto> getBookingById(@PathVariable Long id);
+
+    @Operation(summary = "Получить список доступных временных слотов")
+    @ApiResponse(responseCode = "200", description = "Время найдено")
+    @ApiResponse(responseCode = "404", description = "Время не найдено")
+    @GetMapping("/times")
+     List<LocalDateTime> getAvailableWakeBookingTimes();
 
     @Operation(summary = "Создать новое бронирование")
     @ApiResponse(responseCode = "201", description = "Бронирование создано")
