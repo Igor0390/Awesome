@@ -20,6 +20,6 @@ public class EmployeeDto {
     private String role;
 
     @Schema(description = "Информация о Telegram сотрудника")
-    private TelegramInfoDto telegramInfo;
+    private TelegramInfoUsernameDto  telegramInfo;
 }
 

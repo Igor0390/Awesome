@@ -35,6 +35,13 @@ public class TelegramInfoService {
     }
 
     public void createOrUpdateTelegramInfo(TelegramInfo telegramInfo) {
+        TelegramInfo existTelegramInfo = findByUsername(telegramInfo.getUsername());
+        if (existTelegramInfo != null){
+            telegramInfo.setId(existTelegramInfo.getId());
+
+            existTelegramInfo.setUsername(telegramInfo.getUsername());
+            existTelegramInfo.setChatId(telegramInfo.getChatId());
+        }
         saveAndMap(telegramInfo);
     }
 

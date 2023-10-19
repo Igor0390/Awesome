@@ -248,7 +248,6 @@ public class SupBoardHandler {
                 Пожалуйста, выбери другое время из таблички выше""");
     }
 
-
     public int getBookedSupBoardsCountAtTime(LocalDateTime selectedTime) {
         return bookingService.getSupBoardsCountAtTime(SUP_BOARD.getId(), selectedTime);
     }

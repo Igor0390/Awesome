@@ -49,11 +49,41 @@ public class InlineButtonKeyboard {
         return keyboard;
     }
 
-    public SendMessage buildInlineButtonMenu(long chatId) {
+    public InlineKeyboardMarkup createEmployeeRoleKeyboard(){
+        InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboardRows = new ArrayList<>();
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("Администратор");
+        button1.setCallbackData("role_administrator");
+
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        button2.setText("Оператор лебедки");
+        button2.setCallbackData("role_operator");
+
+        row1.add(button1);
+        row1.add(button2);
+        keyboardRows.add(row1);
+        keyboard.setKeyboard(keyboardRows);
+        return keyboard;
+    }
+
+    public SendMessage buildUserInlineButtonMenu(long chatId) {
         InlineKeyboardMarkup keyboard = createInlineKeyboardMarkup();
         return SendMessage.builder()
                 .chatId(chatId)
                 .text("Привет, я помогу тебе сделать следующие вещи:")
+                .parseMode("Markdown")
+                .replyMarkup(keyboard)
+                .build();
+    }
+
+    public SendMessage buildEmployeeInlineButtonMenu(long chatId) {
+        InlineKeyboardMarkup keyboard = createEmployeeRoleKeyboard();
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text("Привет, коллега! Выбери свою роль: ")
                 .parseMode("Markdown")
                 .replyMarkup(keyboard)
                 .build();
