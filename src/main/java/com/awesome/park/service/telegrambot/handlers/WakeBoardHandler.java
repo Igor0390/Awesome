@@ -69,7 +69,6 @@ public class WakeBoardHandler {
     }
 
     public SendMessage buildBookingTimeButtonMenu(Long chatId, String text, BotState botState) {
-
         // проверяем если текущий пользователь это уже записанный пользователь, то указываем его как найденного
         if (currentUserFirstName == null) {
             currentUserFirstName = foundCustomer.getFirstName();

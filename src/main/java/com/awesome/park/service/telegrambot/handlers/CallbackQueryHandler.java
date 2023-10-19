@@ -14,6 +14,7 @@ public class CallbackQueryHandler {
     private final WakeBoardHandler bookingHandler;
     private final SupBoardHandler supBoardHandler;
     private final EventsHandler eventsHandler;
+    private final EmployeeHandler employeeHandler;
 
     @SneakyThrows
     public SendMessage handleCallbackQuery(Update update, Long chatId) {
@@ -32,6 +33,10 @@ public class CallbackQueryHandler {
             case "events" -> {
                 // Вызываем обработчик для отображения ближайших событий
                 return eventsHandler.handleEvents(update);
+            }
+            case "role_administrator", "role_operator" -> {
+                // Вызываем обработчик для сохранения нового сотрудника
+                return employeeHandler.createEmployeeTgInfo(update);
             }
             default -> {
                 // Обработка других callback-запросов, на будущее

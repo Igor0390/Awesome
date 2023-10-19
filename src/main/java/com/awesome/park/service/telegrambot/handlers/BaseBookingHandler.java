@@ -4,6 +4,7 @@ import com.awesome.park.entity.Customer;
 import com.awesome.park.entity.TelegramInfo;
 import com.awesome.park.service.CustomerService;
 import com.awesome.park.service.TelegramInfoService;
+import com.awesome.park.service.telegrambot.InlineButtonKeyboard;
 import com.awesome.park.service.telegrambot.UserBotDataStorage;
 import com.awesome.park.util.BotState;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +25,12 @@ public class BaseBookingHandler {
     private final UserBotDataStorage userBotDataStorage;
     private final WakeBoardHandler wakeBoardHandler;
     private final SupBoardHandler supBoardHandler;
+    private final InlineButtonKeyboard buttonKeyboard;
 
     static Customer foundCustomer;
     static String currentUserFirstName;
+    static String currentUserLastName;
     static String telegramUserName;
-    private String currentUserLastName;
     private String currentUserPhoneNumber;
 
     public SendMessage checkNameAndSurname(Update update, BotState botState) {
@@ -53,9 +55,21 @@ public class BaseBookingHandler {
                 // Меняем состояние
                 userBotDataStorage.getUsersBotStates().put(update.getMessage().getChatId(), botState);
                 // Отправляем пользователю подтверждение
-                return new SendMessage(chatId, "Круть, рад знакомству с тобой, "
-                        + firstName
-                        + "! Теперь введи пожалуйста свой номер телефона в формате +7XXXXXXXXXX");
+                String welcomeMessage = "Круть, рад знакомству с тобой, ";
+                if ((botState != BotState.EMPLOYEE_WAIT_FOR_SAVE)) {
+                    return new SendMessage(chatId, welcomeMessage
+                            + firstName
+                            + "! Теперь введи пожалуйста свой номер телефона в формате +7XXXXXXXXXX");
+                } else {
+                    return SendMessage.builder()
+                            .chatId(chatId)
+                            .text(welcomeMessage
+                                    + firstName
+                                    + " Надеюсь у тебя все получится!")
+                            .replyMarkup(buttonKeyboard.getReplyKeyboardMarkup("По любасу!", "Заебись!"))
+                            .parseMode("Markdown")
+                            .build();
+                }
             }
         } else {
             // Если длина массива не равна 2, отправим сообщение об ошибке
@@ -84,6 +98,7 @@ public class BaseBookingHandler {
         }
         return new SendMessage(id, "после записи номера телефона, что-то пошло не так");
     }
+
     @Transactional
     public void saveInDataBase(Update update) {
         TelegramInfo telegramInfo = new TelegramInfo();
